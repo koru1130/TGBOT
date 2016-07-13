@@ -26,6 +26,7 @@ function TGBOT (options) {
 util.inherits(TGBOT, EventEmitter);
 /**
  * 啟動bot
+ * @class TGBOT
  * @method start
  */
 TGBOT.prototype.start = function(){
@@ -120,6 +121,8 @@ TGBOT.prototype._invoke = function(apiName,params,cb,timeout,multiPart){
 };
 /**
  * 獲取bot資訊
+ * @class TGBOT
+ * @method getMe
  * @param {Function} cb callback
  */
 TGBOT.prototype.getMe = function getMe(cb) {
@@ -127,6 +130,8 @@ TGBOT.prototype.getMe = function getMe(cb) {
 };
 /**
  * 發送訊息
+ * @class TGBOT
+ * @method sendMessage
  * @param chat_id 要送到哪
  * @param {String} text 要發送的文字
  * @param {Object} [datas] 其他資料
@@ -140,6 +145,8 @@ TGBOT.prototype.sendMessage = function sendMessage(chat_id, text, datas, cb) {
 };
 /**
  * 添加指令
+ * @class TGBOT
+ * @method addCmd
  * @param {String} cmd 指令名稱
  * @param {Function} script 指令的內容
  * @param {String} desc 簡短描述
@@ -165,7 +172,8 @@ TGBOT.prototype.execCmd = function(message){
 };
 /**
  * 建構toolBox物件
- * @constructor
+ * @class TGBOT
+ * @method createToolBox
  * @param {Object} message 訊息
  * @return {Object} toolBox 工具盒
  */
@@ -178,6 +186,7 @@ TGBOT.prototype.createToolBox = function(message) {
     return toolBox;
     /**
      * toolBox
+     * @class toolBox
      * @method sendToChat(text) 發送文字到訊息的來源
      * @method replyMsg(text) 以文字回復訊息
      * @method sendToUser(text) 發送文字給發送訊息的使用者
@@ -185,6 +194,8 @@ TGBOT.prototype.createToolBox = function(message) {
 };
 /**
  * 產生Help
+ * @class TGBOT
+ * @method genHelp
  * @param {Function} Help的格式
  * @return {String} help help
  */

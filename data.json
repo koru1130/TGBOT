@@ -5,8 +5,7 @@
             "name": "tg.js",
             "modules": {},
             "classes": {
-                "TGBOT": 1,
-                "toolBox": 1
+                "TGBOT": 1
             },
             "fors": {},
             "namespaces": {}
@@ -33,19 +32,6 @@
                     "type": "Object"
                 }
             ]
-        },
-        "toolBox": {
-            "name": "toolBox",
-            "shortname": "toolBox",
-            "classitems": [],
-            "plugins": [],
-            "extensions": [],
-            "plugin_for": [],
-            "extension_for": [],
-            "file": "tg.js",
-            "line": 177,
-            "description": "toolBox",
-            "itemtype": "method"
         }
     },
     "elements": {},
@@ -143,14 +129,14 @@
                 }
             ],
             "return": {
-                "description": "toolBox 工具盒",
+                "description": "toolBox 工具盒\n sendToChat(text) 發送文字到訊息的來源\n replyMsg(text) 以文字回復訊息\n sendToUser(text) 發送文字給發送訊息的使用者",
                 "type": "Object"
             },
             "class": "TGBOT"
         },
         {
             "file": "tg.js",
-            "line": 190,
+            "line": 188,
             "description": "產生Help",
             "itemtype": "method",
             "name": "genHelp",
@@ -165,7 +151,7 @@
                 "description": "help help",
                 "type": "String"
             },
-            "class": "toolBox"
+            "class": "TGBOT"
         }
     ],
     "warnings": [

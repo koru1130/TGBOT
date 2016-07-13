@@ -6,7 +6,7 @@ function TGBOT (options) {
     EventEmitter.call(this);
     
     this.token = options.token; 
-    this.timeout = options.timeout || 40;
+    this.pollingTimeout = options.pollingTimeout || 40;
     
     this.cmdList = {};
     
@@ -18,9 +18,9 @@ util.inherits(TGBOT, EventEmitter);
 
 TGBOT.prototype.start = function(){
     var self=this;
-    this.getUpdates(40,null);
+    this.getUpdates(self.pollingTimeout,null);
     this.getMe(function(error,result){
-        //console.log(result,error)
+        if(error){console.log(error)};
         self.username = result.username;
         self.cmdRegex = new RegExp("^\/(\\w+)(?:@"+self.username+")?(?: (.*))?$","i");
     });
@@ -58,17 +58,19 @@ TGBOT.prototype.getUpdates = function(timeout,offset){
             });
         }
         self.getUpdates(timeout,self.lastOffset+1);
-    });
+    },timeout*1000+15000);
     
 };
 
-TGBOT.prototype._invoke = function(apiName,params,cb,multiPart){
+TGBOT.prototype._invoke = function(apiName,params,cb,timeout,multiPart){
     cb = cb || function(){};
+    timeout = timeout || 15000;
+    console.log("[INVOKE]",apiName,params);
     var targetURL = 'https://api.telegram.org/bot' + this.token + '/' + apiName;
 
     var requestData = {
         url: targetURL,
-        timeout: 15000 // 15 sec
+        timeout: timeout // 15 sec
     };
     
     if (!multiPart || !params) {
@@ -119,9 +121,9 @@ TGBOT.prototype.execCmd = function(message){
     if(result){
         cmd=result[1];
         args = result[2] ? result[2].split(' ') : [];
-        console.log(cmd,args);
         if (this.cmdList[cmd]) {
             this.cmdList[cmd].script(args,self.createToolBox(message),message);
+            console.log("[COMMAND]",cmd,args);
         }
     }
 };

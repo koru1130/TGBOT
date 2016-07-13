@@ -24,7 +24,7 @@
             "extension_for": [],
             "file": "tg.js",
             "line": 5,
-            "description": "建構 TGBOT 物件",
+            "description": "物件TGBOT",
             "is_constructor": 1,
             "params": [
                 {
@@ -43,7 +43,7 @@
             "plugin_for": [],
             "extension_for": [],
             "file": "tg.js",
-            "line": 182,
+            "line": 177,
             "description": "toolBox",
             "itemtype": "method"
         }

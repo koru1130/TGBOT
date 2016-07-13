@@ -3,7 +3,7 @@ var EventEmitter = require("events").EventEmitter;
 var util = require("util");
 
 /**
- * 建構 TGBOT 物件
+ * 物件TGBOT
  * 
  * @class TGBOT
  * @constructor
@@ -174,11 +174,6 @@ TGBOT.prototype.execCmd = function(message){
  */
 TGBOT.prototype.createToolBox = function(message) {
     var self = this;
-    var toolBox = {};
-    toolBox.sendToChat = text => self.sendMessage(message.chat.id,text);
-    toolBox.replyMsg = text => self.sendMessage(message.chat.id,text,{reply_to_message_id:message.message_id});
-    toolBox.sendToUser = text => self.sendMessage(message.from.id,text);
-    return toolBox;
     /**
      * toolBox
      * @class toolBox
@@ -186,6 +181,11 @@ TGBOT.prototype.createToolBox = function(message) {
      * @method replyMsg(text) 以文字回復訊息
      * @method sendToUser(text) 發送文字給發送訊息的使用者
      */
+    var toolBox = {};
+    toolBox.sendToChat = text => self.sendMessage(message.chat.id,text);
+    toolBox.replyMsg = text => self.sendMessage(message.chat.id,text,{reply_to_message_id:message.message_id});
+    toolBox.sendToUser = text => self.sendMessage(message.from.id,text);
+    return toolBox;
 };
 /**
  * 產生Help

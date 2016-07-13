@@ -2,6 +2,13 @@ var request = require('request');
 var EventEmitter = require("events").EventEmitter;
 var util = require("util");
 
+/**
+ * 建構 TGBOT 物件
+ * 
+ * @class TGBOT
+ * @constructor
+ * @param {Object} options 選項
+ */
 function TGBOT (options) {
     EventEmitter.call(this);
     this.help = true;
@@ -17,7 +24,10 @@ function TGBOT (options) {
     this.cmdRegex = null;
 }
 util.inherits(TGBOT, EventEmitter);
-
+/**
+ * 啟動bot
+ * @method start
+ */
 TGBOT.prototype.start = function(){
     var self=this;
     this.getUpdates(self.pollingTimeout,null);
@@ -108,18 +118,33 @@ TGBOT.prototype._invoke = function(apiName,params,cb,timeout,multiPart){
         cb(null, body.result);
     });
 };
-
+/**
+ * 獲取bot資訊
+ * @param {Function} cb callback
+ */
 TGBOT.prototype.getMe = function getMe(cb) {
     return this._invoke('getMe', null , cb);
 };
-
+/**
+ * 發送訊息
+ * @param chat_id 要送到哪
+ * @param {String} text 要發送的文字
+ * @param {Object} [datas] 其他資料
+ * @cb {Function} [cb] callback
+ */
 TGBOT.prototype.sendMessage = function sendMessage(chat_id, text, datas, cb) {
     datas = typeof datas === "object" ? datas : {};
     datas.chat_id = chat_id;
     datas.text = text;
     return this._invoke('sendMessage', datas , cb);
 };
-
+/**
+ * 添加指令
+ * @param {String} cmd 指令名稱
+ * @param {Function} script 指令的內容
+ * @param {String} desc 簡短描述
+ * @param {String} helpMsg 說明文字
+ */
 TGBOT.prototype.addCmd = function(cmd,script,desc,helpMsg){
     this.cmdList[cmd] = {cmd:cmd,script:script,desc:desc,helpMsg:helpMsg};
     console.log("Added Command : "+cmd);
@@ -138,7 +163,12 @@ TGBOT.prototype.execCmd = function(message){
         }
     }
 };
-
+/**
+ * 建構toolBox物件
+ * @constructor
+ * @param {Object} message 訊息
+ * @return {Object} toolBox 工具盒
+ */
 TGBOT.prototype.createToolBox = function(message) {
     var self = this;
     var toolBox = {};
@@ -146,8 +176,18 @@ TGBOT.prototype.createToolBox = function(message) {
     toolBox.replyMsg = text => self.sendMessage(message.chat.id,text,{reply_to_message_id:message.message_id});
     toolBox.sendToUser = text => self.sendMessage(message.from.id,text);
     return toolBox;
+    /**
+     * toolBox
+     * @method sendToChat(text) 發送文字到訊息的來源
+     * @method replyMsg(text) 以文字回復訊息
+     * @method sendToUser(text) 發送文字給發送訊息的使用者
+     */
 };
-
+/**
+ * 產生Help
+ * @param {Function} Help的格式
+ * @return {String} help help
+ */
 TGBOT.prototype.genHelp = function(format){
     var self = this;
     var help = "";

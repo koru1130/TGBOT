@@ -4,9 +4,11 @@ var util = require("util");
 
 function TGBOT (options) {
     EventEmitter.call(this);
+    this.help = true;
     
     this.token = options.token; 
     this.pollingTimeout = options.pollingTimeout || 40;
+    this.help = options.help;
     
     this.cmdList = {};
     
@@ -24,6 +26,15 @@ TGBOT.prototype.start = function(){
         self.username = result.username;
         self.cmdRegex = new RegExp("^\/(\\w+)(?:@"+self.username+")?(?: (.*))?$","i");
     });
+    if(self.help){
+        self.addCmd('help',function(toolBox,args){
+            if(args[0]){
+                toolBox.replyMsg(self.cmdList[args[0]].helpMsg || (self.cmdList[args[0]].desc || "Command " + args[0] + " not found or nothing to display :("));
+            }else{
+                toolBox.replyMsg(self.genHelp());
+            }
+        },"Show help","/help command\nShow how to use the command\nIf no argument,show the commnad list");
+    }
 };
 
 TGBOT.prototype.getUpdates = function(timeout,offset){
@@ -109,8 +120,8 @@ TGBOT.prototype.sendMessage = function sendMessage(chat_id, text, datas, cb) {
     return this._invoke('sendMessage', datas , cb);
 };
 
-TGBOT.prototype.addCmd = function(cmd,script,desc,help){
-    this.cmdList[cmd] = {cmd:cmd,script:script,desc:desc};
+TGBOT.prototype.addCmd = function(cmd,script,desc,helpMsg){
+    this.cmdList[cmd] = {cmd:cmd,script:script,desc:desc,helpMsg:helpMsg};
     console.log("Added Command : "+cmd);
 };
 

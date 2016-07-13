@@ -171,16 +171,14 @@ TGBOT.prototype.execCmd = function(message){
  * @method createToolBox
  * @param {Object} message 訊息
  * @return {Object} toolBox 工具盒
+ *  sendToChat(text) 發送文字到訊息的來源
+ *  replyMsg(text) 以文字回復訊息
+ *  sendToUser(text) 發送文字給發送訊息的使用者
+     
  */
 TGBOT.prototype.createToolBox = function(message) {
     var self = this;
-    /**
-     * toolBox
-     * @class toolBox
-     * @method sendToChat(text) 發送文字到訊息的來源
-     * @method replyMsg(text) 以文字回復訊息
-     * @method sendToUser(text) 發送文字給發送訊息的使用者
-     */
+
     var toolBox = {};
     toolBox.sendToChat = text => self.sendMessage(message.chat.id,text);
     toolBox.replyMsg = text => self.sendMessage(message.chat.id,text,{reply_to_message_id:message.message_id});

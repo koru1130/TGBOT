@@ -118,7 +118,7 @@ TGBOT.prototype.execCmd = function(message){
     var cmd,args;
     if(result){
         cmd=result[1];
-        args = result[2] ? result[2].split(' ') : null;
+        args = result[2] ? result[2].split(' ') : [];
         console.log(cmd,args);
         if (this.cmdList[cmd]) {
             this.cmdList[cmd].script(args,self.createToolBox(message),message);

@@ -134,3 +134,5 @@ TGBOT.prototype.createToolBox = function(message) {
     toolBox.sendToUser = text => self.sendMessage(message.from.id,text);
     return toolBox;
 };
+
+module.exports = TGBOT;

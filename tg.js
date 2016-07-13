@@ -109,7 +109,7 @@ TGBOT.prototype.sendMessage = function sendMessage(chat_id, text, datas, cb) {
     return this._invoke('sendMessage', datas , cb);
 };
 
-TGBOT.prototype.addCmd = function(cmd,script,desc){
+TGBOT.prototype.addCmd = function(cmd,script,desc,help){
     this.cmdList[cmd] = {cmd:cmd,script:script,desc:desc};
     console.log("Added Command : "+cmd);
 };
@@ -122,7 +122,7 @@ TGBOT.prototype.execCmd = function(message){
         cmd=result[1];
         args = result[2] ? result[2].split(' ') : [];
         if (this.cmdList[cmd]) {
-            this.cmdList[cmd].script(args,self.createToolBox(message),message);
+            this.cmdList[cmd].script(self.createToolBox(message),args,message);
             console.log("[COMMAND]",cmd,args);
         }
     }
@@ -135,6 +135,16 @@ TGBOT.prototype.createToolBox = function(message) {
     toolBox.replyMsg = text => self.sendMessage(message.chat.id,text,{reply_to_message_id:message.message_id});
     toolBox.sendToUser = text => self.sendMessage(message.from.id,text);
     return toolBox;
+};
+
+TGBOT.prototype.genHelp = function(format){
+    var self = this;
+    var help = "";
+    format = format || (command => "/" + command.cmd + " : " + command.desc + "\n");
+    for(var command in self.cmdList){
+        help+=format(self.cmdList[command]);
+    }
+    return help;
 };
 
 module.exports = TGBOT;

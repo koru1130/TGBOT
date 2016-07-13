@@ -23,8 +23,8 @@
             "plugin_for": [],
             "extension_for": [],
             "file": "tg.js",
-            "line": 195,
-            "description": "產生Help",
+            "line": 5,
+            "description": "建構 TGBOT 物件",
             "is_constructor": 1,
             "params": [
                 {
@@ -32,13 +32,7 @@
                     "description": "選項",
                     "type": "Object"
                 }
-            ],
-            "itemtype": "method",
-            "cb": "{Function} [cb] callback",
-            "return": {
-                "description": "toolBox 工具盒",
-                "type": "Object"
-            }
+            ]
         },
         "toolBox": {
             "name": "toolBox",
@@ -49,17 +43,135 @@
             "plugin_for": [],
             "extension_for": [],
             "file": "tg.js",
-            "line": 187,
+            "line": 182,
             "description": "toolBox",
             "itemtype": "method"
         }
     },
     "elements": {},
-    "classitems": [],
+    "classitems": [
+        {
+            "file": "tg.js",
+            "line": 27,
+            "description": "啟動bot",
+            "itemtype": "method",
+            "name": "start",
+            "class": "TGBOT"
+        },
+        {
+            "file": "tg.js",
+            "line": 121,
+            "description": "獲取bot資訊",
+            "itemtype": "method",
+            "name": "getMe",
+            "params": [
+                {
+                    "name": "cb",
+                    "description": "callback",
+                    "type": "Function"
+                }
+            ],
+            "class": "TGBOT"
+        },
+        {
+            "file": "tg.js",
+            "line": 129,
+            "description": "發送訊息",
+            "itemtype": "method",
+            "name": "sendMessage",
+            "params": [
+                {
+                    "name": "chat_id",
+                    "description": "要送到哪"
+                },
+                {
+                    "name": "text",
+                    "description": "要發送的文字",
+                    "type": "String"
+                },
+                {
+                    "name": "datas",
+                    "description": "其他資料",
+                    "type": "Object",
+                    "optional": true
+                }
+            ],
+            "cb": "{Function} [cb] callback",
+            "class": "TGBOT"
+        },
+        {
+            "file": "tg.js",
+            "line": 143,
+            "description": "添加指令",
+            "itemtype": "method",
+            "name": "addCmd",
+            "params": [
+                {
+                    "name": "cmd",
+                    "description": "指令名稱",
+                    "type": "String"
+                },
+                {
+                    "name": "script",
+                    "description": "指令的內容",
+                    "type": "Function"
+                },
+                {
+                    "name": "desc",
+                    "description": "簡短描述",
+                    "type": "String"
+                },
+                {
+                    "name": "helpMsg",
+                    "description": "說明文字",
+                    "type": "String"
+                }
+            ],
+            "class": "TGBOT"
+        },
+        {
+            "file": "tg.js",
+            "line": 169,
+            "description": "建構toolBox物件",
+            "itemtype": "method",
+            "name": "createToolBox",
+            "params": [
+                {
+                    "name": "message",
+                    "description": "訊息",
+                    "type": "Object"
+                }
+            ],
+            "return": {
+                "description": "toolBox 工具盒",
+                "type": "Object"
+            },
+            "class": "TGBOT"
+        },
+        {
+            "file": "tg.js",
+            "line": 190,
+            "description": "產生Help",
+            "itemtype": "method",
+            "name": "genHelp",
+            "params": [
+                {
+                    "name": "Help的格式",
+                    "description": "",
+                    "type": "Function"
+                }
+            ],
+            "return": {
+                "description": "help help",
+                "type": "String"
+            },
+            "class": "toolBox"
+        }
+    ],
     "warnings": [
         {
             "message": "unknown tag: cb",
-            "line": " tg.js:131"
+            "line": " tg.js:129"
         }
     ]
 }

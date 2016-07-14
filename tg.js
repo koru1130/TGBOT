@@ -32,7 +32,7 @@ TGBOT.prototype.start = function(){
     var self=this;
     this.getUpdates(self.pollingTimeout,null);
     this.getMe(function(error,result){
-        if(error){console.log(error)};
+        if(error){console.log(error)}
         self.username = result.username;
         self.cmdRegex = new RegExp("^\/(\\w+)(?:@"+self.username+")?(?: (.*))?$","i");
     });
@@ -59,7 +59,7 @@ TGBOT.prototype.getUpdates = function(timeout,offset){
     
     self._invoke('getUpdates',params,function(error,result){
         if(error!=null){
-            self.lastOffset == null;
+            self.lastOffset = null;
             console.log(error.toString());
         }else{
             result.forEach(function(update){

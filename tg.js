@@ -11,7 +11,6 @@ var util = require("util");
  */
 function TGBOT (options) {
     EventEmitter.call(this);
-    this.help = true;
     
     this.token = options.token; 
     this.pollingTimeout = options.pollingTimeout || 40;

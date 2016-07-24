@@ -38,7 +38,7 @@ TGBOT.prototype.start = function(){
     if(self.help){
         self.addCmd('help',function(toolBox,args){
             if(args[0]){
-                toolBox.replyMsg(self.cmdList[args[0]].helpMsg || (self.cmdList[args[0]].desc || "Command " + args[0] + " not found or nothing to display :("));
+                toolBox.replyMsg(self.cmdList[args[1]].helpMsg || (self.cmdList[args[1]].desc || "Command " + args[1] + " not found or nothing to display :("));
             }else{
                 toolBox.replyMsg(self.genHelp());
             }
@@ -155,10 +155,12 @@ TGBOT.prototype.addCmd = function(cmd,script,desc,helpMsg){
 TGBOT.prototype.execCmd = function(message){
     var self= this;
     var result = message.text.match(this.cmdRegex);
-    var cmd,args;
+    var cmd;
+    var args = [];
     if(result){
         cmd=result[1];
-        args = result[2] ? result[2].split(' ') : [];
+        args[0] = result[2];
+        args = args.concat(result[2] ? result[2].split(' ') : []);
         if (this.cmdList[cmd]) {
             this.cmdList[cmd].script(self.createToolBox(message),args,message);
             console.log("[COMMAND]",cmd,args);

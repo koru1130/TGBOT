@@ -73,6 +73,10 @@ TGBOT.prototype.getUpdates = function(timeout,offset){
                     self.emit('inline_query', update.inline_query);
                 } else if (update.chosen_inline_result) {
                     self.emit('chosen_inline_result', update.chosen_inline_result);
+                } else if (update.edited_message){
+                    self.emit('edited_message',update.edited_message);
+                } else if (update.callback_query){
+                    self.emit('callback_query',update.callback_query);
                 }
                 
             });
@@ -138,6 +142,39 @@ TGBOT.prototype.sendMessage = function sendMessage(chat_id, text, datas, cb) {
     datas.chat_id = chat_id;
     datas.text = text;
     return this._invoke('sendMessage', datas , cb);
+};
+/**
+ * 回復訊息
+ * @method replyMessage
+ * @param chat_id 要送到哪
+ * @param reply_to_message_id 回復的訊息id
+ * @param {String} text 要發送的文字
+ * @param {Object} [datas] 其他資料
+ * @cb {Function} [cb] callback
+ */
+TGBOT.prototype.replyMessage = function replyMessage(chat_id, reply_to_message_id, text, datas, cb) {
+    datas = typeof datas === "object" ? datas : {};
+    datas.chat_id = chat_id;
+    datas.text = text;
+    datas.reply_to_message_id = reply_to_message_id;
+    return this._invoke('sendMessage', datas , cb);
+};
+/**
+ * 轉傳訊息
+ * @method forwardMessage
+ * @param chat_id 要送到哪
+ * @param from_chat_id 來源id
+ * @param message_id 要轉傳的訊息id
+ * @param {String} text 要發送的文字
+ * @param {Object} [datas] 其他資料
+ * @cb {Function} [cb] callback
+ */
+TGBOT.prototype.forwardMessage = function forwardMessage(chat_id, from_chat_id, message_id, datas, cb) {
+    datas = typeof datas === "object" ? datas : {};
+    datas.chat_id = chat_id;
+    datas.from_chat_id = from_chat_id;
+    datas.message_id = message_id;
+    return this._invoke('forwardMessage', datas , cb);
 };
 /**
  * 添加指令

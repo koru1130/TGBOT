@@ -9,15 +9,16 @@ var util = require("util");
  * @constructor
  * @param {Object} options 選項
  */
-function TGBOT (options) {
+function TGBOT(options) {
     EventEmitter.call(this);
-    
-    this.token = options.token; 
+
+    this.token = options.token;
     this.pollingTimeout = options.pollingTimeout || 40;
     this.help = options.help;
-    
+
     this.cmdList = {};
-    
+    this.onCBQList = [];
+
     this.lastOffset = null;
     this.username = null;
     this.cmdRegex = null;
@@ -27,96 +28,116 @@ util.inherits(TGBOT, EventEmitter);
  * 啟動bot
  * @method start
  */
-TGBOT.prototype.start = function(){
-    var self=this;
-    this.getUpdates(self.pollingTimeout,null);
-    this.getMe(function(error,result){
-        if(error){console.log(error)}
+TGBOT.prototype.start = function() {
+    var self = this;
+    this.getUpdates(self.pollingTimeout, null);
+    this.getMe(function(error, result) {
+        if (error) {
+            console.log(error)
+        }
         self.username = result.username;
-        self.cmdRegex = new RegExp("^\/(\\w+)(?:@"+self.username+")?(?: (.*))?$","i");
+        self.cmdRegex = new RegExp("^\/(\\w+)(?:@" + self.username + ")?(?: (.*))?$", "i");
     });
-    if(self.help){
-        self.addCmd('help',function(toolBox,args){
-            if(args[0]){
+    if (self.help) {
+        self.addCmd('help', function(toolBox, args) {
+            if (args[0]) {
                 toolBox.replyMsg(self.cmdList[args[1]].helpMsg || (self.cmdList[args[1]].desc || "Command " + args[1] + " not found or nothing to display :("));
-            }else{
+            }
+            else {
                 toolBox.replyMsg(self.genHelp());
             }
-        },"Show help","/help command\nShow how to use the command\nIf no argument,show the commnad list");
+        }, "Show help", "/help command\nShow how to use the command\nIf no argument,show the commnad list");
     }
 };
 
-TGBOT.prototype.getUpdates = function(timeout,offset){
+TGBOT.prototype.getUpdates = function(timeout, offset) {
     var self = this;
-    
+
     var params = {
         timeout: timeout
     };
     if (offset != null) {
         params.offset = offset;
     }
-    
-    self._invoke('getUpdates',params,function(error,result){
-        if(error!=null){
+
+    self._invoke('getUpdates', params, function(error, result) {
+        if (error != null) {
             self.lastOffset = null;
             console.log(error.toString());
-        }else{
-            result.forEach(function(update){
+        }
+        else {
+            result.forEach(function(update) {
                 if (update.update_id >= self.lastOffset) {
-                        self.lastOffset = update.update_id;
-                    }
+                    self.lastOffset = update.update_id;
+                }
                 if (update.message) {
                     self.emit('message', update.message);
-                    if(update.message.text){self.execCmd(update.message)}
+                    if (update.message.text) {
+                        self.execCmd(update.message)
+                    }
                     //console.log(update.message);
-                } else if (update.inline_query) {
-                    self.emit('inline_query', update.inline_query);
-                } else if (update.chosen_inline_result) {
-                    self.emit('chosen_inline_result', update.chosen_inline_result);
-                } else if (update.edited_message){
-                    self.emit('edited_message',update.edited_message);
-                } else if (update.callback_query){
-                    self.emit('callback_query',update.callback_query);
                 }
-                
+                else if (update.inline_query) {
+                    self.emit('inline_query', update.inline_query);
+                }
+                else if (update.chosen_inline_result) {
+                    self.emit('chosen_inline_result', update.chosen_inline_result);
+                }
+                else if (update.edited_message) {
+                    self.emit('edited_message', update.edited_message);
+                }
+                else if (update.callback_query) {
+                    self.emit('callback_query', update.callback_query);
+                    if (update.callback_query.message) {
+                        var onCBQ = self.onCBQList.find(function(element) {
+                            return element.id == update.callback_query.message.message_id;
+                        });
+                        if(onCBQ) onCBQ.fn(update.callback_query);
+                    }
+                }
+
             });
         }
-        self.getUpdates(timeout,self.lastOffset+1);
-    },timeout*1000+15000);
-    
+        self.getUpdates(timeout, self.lastOffset + 1);
+    }, timeout * 1000 + 15000);
+
 };
 
-TGBOT.prototype._invoke = function(apiName,params,cb,timeout,multiPart){
-    cb = cb || function(){};
+
+
+TGBOT.prototype._invoke = function(apiName, params, cb, timeout, multiPart) {
+    cb = cb || function() {};
     timeout = timeout || 15000;
-    console.log("[INVOKE]",apiName,params);
+    console.log("[INVOKE]", apiName, params);
     var targetURL = 'https://api.telegram.org/bot' + this.token + '/' + apiName;
 
     var requestData = {
         url: targetURL,
         timeout: timeout // 15 sec
     };
-    
+
     if (!multiPart || !params) {
         params = params || {};
         requestData.form = params;
-    } else {
+    }
+    else {
         params = params || {};
         requestData.formData = params;
     }
     //console.log(requestData);
-    request.post(requestData, function (err, response, body) {
+    request.post(requestData, function(err, response, body) {
         // console.log(response);
         if (err || response.statusCode !== 200) {
             return cb(err || new Error('unexpect response code: ' + response.statusCode + ' ' + body));
         }
         try {
             body = JSON.parse(body);
-        } catch (e) {
+        }
+        catch (e) {
             return cb(e);
         }
         if (body.ok !== true) {
-            return cb (new Error('response is not ok'));
+            return cb(new Error('response is not ok'));
         }
         cb(null, body.result);
     });
@@ -127,7 +148,7 @@ TGBOT.prototype._invoke = function(apiName,params,cb,timeout,multiPart){
  * @param {Function} cb callback
  */
 TGBOT.prototype.getMe = function getMe(cb) {
-    return this._invoke('getMe', null , cb);
+    return this._invoke('getMe', null, cb);
 };
 /**
  * 發送訊息
@@ -138,10 +159,25 @@ TGBOT.prototype.getMe = function getMe(cb) {
  * @cb {Function} [cb] callback
  */
 TGBOT.prototype.sendMessage = function sendMessage(chat_id, text, datas, cb) {
+    var self = this;
     datas = typeof datas === "object" ? datas : {};
     datas.chat_id = chat_id;
     datas.text = text;
-    return this._invoke('sendMessage', datas , cb);
+    var onCBQ;
+    this._invoke('sendMessage', datas, function(err, result) {
+        if (onCBQ) {
+            self.onCBQList.push({
+                id: result.message_id,
+                fn: onCBQ
+            });
+        }
+        if(cb) cb(err, result); 
+    });
+    return {
+        onCallbackQuery: function(fn) {
+            onCBQ = fn;
+        }
+    };
 };
 /**
  * 回復訊息
@@ -153,11 +189,8 @@ TGBOT.prototype.sendMessage = function sendMessage(chat_id, text, datas, cb) {
  * @cb {Function} [cb] callback
  */
 TGBOT.prototype.replyMessage = function replyMessage(chat_id, reply_to_message_id, text, datas, cb) {
-    datas = typeof datas === "object" ? datas : {};
-    datas.chat_id = chat_id;
-    datas.text = text;
     datas.reply_to_message_id = reply_to_message_id;
-    return this._invoke('sendMessage', datas , cb);
+    this.sendMessage(chat_id, text, datas, cb)
 };
 /**
  * 轉傳訊息
@@ -174,7 +207,7 @@ TGBOT.prototype.forwardMessage = function forwardMessage(chat_id, from_chat_id, 
     datas.chat_id = chat_id;
     datas.from_chat_id = from_chat_id;
     datas.message_id = message_id;
-    return this._invoke('forwardMessage', datas , cb);
+    return this._invoke('forwardMessage', datas, cb);
 };
 /**
  * 添加指令
@@ -184,23 +217,28 @@ TGBOT.prototype.forwardMessage = function forwardMessage(chat_id, from_chat_id, 
  * @param {String} desc 簡短描述
  * @param {String} helpMsg 說明文字
  */
-TGBOT.prototype.addCmd = function(cmd,script,desc,helpMsg){
-    this.cmdList[cmd] = {cmd:cmd,script:script,desc:desc,helpMsg:helpMsg};
-    console.log("Added Command : "+cmd);
+TGBOT.prototype.addCmd = function(cmd, script, desc, helpMsg) {
+    this.cmdList[cmd] = {
+        cmd: cmd,
+        script: script,
+        desc: desc,
+        helpMsg: helpMsg
+    };
+    console.log("Added Command : " + cmd);
 };
 
-TGBOT.prototype.execCmd = function(message){
-    var self= this;
+TGBOT.prototype.execCmd = function(message) {
+    var self = this;
     var result = message.text.match(this.cmdRegex);
     var cmd;
     var args = [];
-    if(result){
-        cmd=result[1];
+    if (result) {
+        cmd = result[1];
         args[0] = result[2];
         args = args.concat(result[2] ? result[2].split(' ') : []);
         if (this.cmdList[cmd]) {
-            this.cmdList[cmd].script(self.createToolBox(message),args,message);
-            console.log("[COMMAND]",cmd,args);
+            this.cmdList[cmd].script(self.createToolBox(message), args, message);
+            console.log("[COMMAND]", cmd, args);
         }
     }
 };
@@ -215,26 +253,33 @@ TGBOT.prototype.execCmd = function(message){
      
  */
 TGBOT.prototype.createToolBox = function(message) {
-    var self = this;
+        var self = this;
 
-    var toolBox = {};
-    toolBox.sendToChat = text => self.sendMessage(message.chat.id,text);
-    toolBox.replyMsg = text => self.sendMessage(message.chat.id,text,{reply_to_message_id:message.message_id});
-    toolBox.sendToUser = text => self.sendMessage(message.from.id,text);
-    return toolBox;
-};
-/**
- * 產生Help
- * @method genHelp
- * @param {Function} Help的格式
- * @return {String} help help
- */
-TGBOT.prototype.genHelp = function(format){
+        var toolBox = {};
+        toolBox.sendToChat = function(text, datas, cb) {
+            return self.sendMessage(message.chat.id, text, datas, cb);
+        };
+        toolBox.replyMsg = function(text, datas, cb) {
+            datas.reply_to_message_id = message.message_id;
+            return self.sendMessage(message.chat.id, text, datas, cb);
+        };
+        toolBox.sendToUser = function(text, datas, cb) {
+            return self.sendMessage(message.from.id, text, datas, cb);
+        };
+        return toolBox;
+    }
+    /**
+     * 產生Help
+     * @method genHelp
+     * @param {Function} Help的格式
+     * @return {String} help help
+     */
+TGBOT.prototype.genHelp = function(format) {
     var self = this;
     var help = "";
     format = format || (command => "/" + command.cmd + " : " + command.desc + "\n");
-    for(var command in self.cmdList){
-        help+=format(self.cmdList[command]);
+    for (var command in self.cmdList) {
+        help += format(self.cmdList[command]);
     }
     return help;
 };

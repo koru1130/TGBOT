@@ -39,12 +39,12 @@ TGBOT.prototype.start = function() {
         self.cmdRegex = new RegExp("^\/(\\w+)(?:@" + self.username + ")?(?: (.*))?$", "i");
     });
     if (self.help) {
-        self.addCmd('help', function(toolBox, args) {
+        self.addCmd('help', function(message, args) {
             if (args[0]) {
-                toolBox.replyMsg(self.cmdList[args[1]].helpMsg || (self.cmdList[args[1]].desc || "Command " + args[1] + " not found or nothing to display :("));
+                message.replyMsg(self.cmdList[args[1]].helpMsg || (self.cmdList[args[1]].desc || "Command " + args[1] + " not found or nothing to display :("));
             }
             else {
-                toolBox.replyMsg(self.genHelp());
+                message.replyMsg(self.genHelp());
             }
         }, "Show help", "/help command\nShow how to use the command\nIf no argument,show the commnad list");
     }
@@ -92,7 +92,7 @@ TGBOT.prototype.getUpdates = function(timeout, offset) {
                         var onCBQ = self.onCBQList.find(function(element) {
                             return element.id == update.callback_query.message.message_id;
                         });
-                        if(onCBQ) onCBQ.fn(update.callback_query);
+                        if (onCBQ) onCBQ.fn(update.callback_query);
                     }
                 }
 
@@ -171,7 +171,7 @@ TGBOT.prototype.sendMessage = function sendMessage(chat_id, text, datas, cb) {
                 fn: onCBQ
             });
         }
-        if(cb) cb(err, result); 
+        if (cb) cb(err, result);
     });
     return {
         onCallbackQuery: function(fn) {
@@ -237,43 +237,32 @@ TGBOT.prototype.execCmd = function(message) {
         args[0] = result[2];
         args = args.concat(result[2] ? result[2].split(' ') : []);
         if (this.cmdList[cmd]) {
-            this.cmdList[cmd].script(self.createToolBox(message), args, message);
+            message.sendToChat = function(text, datas, cb) {
+                return self.sendMessage(message.chat.id, text, datas, cb);
+            };
+            message.replyMsg = function(text, datas, cb) {
+                datas = datas || {};
+                datas.reply_to_message_id = message.message_id;
+                return self.sendMessage(message.chat.id, text, datas, cb);
+            };
+            message.sendToUser = function(text, datas, cb) {
+                return self.sendMessage(message.from.id, text, datas, cb);
+            };
+            this.cmdList[cmd].script(message, args);
             console.log("[COMMAND]", cmd, args);
         }
     }
 };
-/**
- * 建構toolBox物件
- * @method createToolBox
- * @param {Object} message 訊息
- * @return {Object} toolBox 工具盒
- *  sendToChat(text) 發送文字到訊息的來源
- *  replyMsg(text) 以文字回復訊息
- *  sendToUser(text) 發送文字給發送訊息的使用者
-     
- */
-TGBOT.prototype.createToolBox = function(message) {
-        var self = this;
 
-        var toolBox = {};
-        toolBox.sendToChat = function(text, datas, cb) {
-            return self.sendMessage(message.chat.id, text, datas, cb);
-        };
-        toolBox.replyMsg = function(text, datas, cb) {
-            datas.reply_to_message_id = message.message_id;
-            return self.sendMessage(message.chat.id, text, datas, cb);
-        };
-        toolBox.sendToUser = function(text, datas, cb) {
-            return self.sendMessage(message.from.id, text, datas, cb);
-        };
-        return toolBox;
-    }
-    /**
-     * 產生Help
-     * @method genHelp
-     * @param {Function} Help的格式
-     * @return {String} help help
-     */
+TGBOT.prototype.editMessageText = function(chat_id, message_id, text, datas, cb) {
+
+};
+/**
+ * 產生Help
+ * @method genHelp
+ * @param {Function} Help的格式
+ * @return {String} help help
+ */
 TGBOT.prototype.genHelp = function(format) {
     var self = this;
     var help = "";

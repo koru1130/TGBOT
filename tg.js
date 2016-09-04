@@ -69,18 +69,7 @@ TGBOT.prototype.getUpdates = function(timeout, offset) {
                     self.lastOffset = update.update_id;
                 }
                 if (update.message) {
-                    var message = update.message;
-                    message.sendToChat = function(text, datas, cb) {
-                        return self.sendMessage(message.chat.id, text, datas, cb);
-                    };
-                    message.replyMsg = function(text, datas, cb) {
-                        datas = datas || {};
-                        datas.reply_to_message_id = message.message_id;
-                        return self.sendMessage(message.chat.id, text, datas, cb);
-                    };
-                    message.sendToUser = function(text, datas, cb) {
-                        return self.sendMessage(message.from.id, text, datas, cb);
-                    };
+                    var message = self.addMethodToMessage(update.message);
                     self.emit('message', message);
                     if (message.text) self.execCmd(message);
                     //console.log(update.message);
@@ -111,7 +100,21 @@ TGBOT.prototype.getUpdates = function(timeout, offset) {
 
 };
 
-
+TGBOT.prototype.addMethodToMessage = function(message) {
+    var self = this;
+    message.sendToChat = function(text, datas, cb) {
+        return self.sendMessage(message.chat.id, text, datas, cb);
+    };
+    message.replyMsg = function(text, datas, cb) {
+        datas = datas || {};
+        datas.reply_to_message_id = message.message_id;
+        return self.sendMessage(message.chat.id, text, datas, cb);
+    };
+    message.sendToUser = function(text, datas, cb) {
+        return self.sendMessage(message.from.id, text, datas, cb);
+    };
+    return message;
+};
 
 TGBOT.prototype._invoke = function(apiName, params, cb, timeout, multiPart) {
     cb = cb || function() {};

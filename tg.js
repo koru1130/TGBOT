@@ -32,9 +32,7 @@ TGBOT.prototype.start = function() {
     var self = this;
     this.getUpdates(self.pollingTimeout, null);
     this.getMe(function(error, result) {
-        if (error) {
-            console.log(error)
-        }
+        if (error) console.log(error);
         self.username = result.username;
         self.cmdRegex = new RegExp("^\/(\\w+)(?:@" + self.username + ")?(?: (.*))?$", "i");
     });
@@ -71,10 +69,20 @@ TGBOT.prototype.getUpdates = function(timeout, offset) {
                     self.lastOffset = update.update_id;
                 }
                 if (update.message) {
-                    self.emit('message', update.message);
-                    if (update.message.text) {
-                        self.execCmd(update.message)
-                    }
+                    var message = update.message;
+                    message.sendToChat = function(text, datas, cb) {
+                        return self.sendMessage(message.chat.id, text, datas, cb);
+                    };
+                    message.replyMsg = function(text, datas, cb) {
+                        datas = datas || {};
+                        datas.reply_to_message_id = message.message_id;
+                        return self.sendMessage(message.chat.id, text, datas, cb);
+                    };
+                    message.sendToUser = function(text, datas, cb) {
+                        return self.sendMessage(message.from.id, text, datas, cb);
+                    };
+                    self.emit('message', message);
+                    if (message.text) self.execCmd(message);
                     //console.log(update.message);
                 }
                 else if (update.inline_query) {
@@ -237,17 +245,6 @@ TGBOT.prototype.execCmd = function(message) {
         args[0] = result[2];
         args = args.concat(result[2] ? result[2].split(' ') : []);
         if (this.cmdList[cmd]) {
-            message.sendToChat = function(text, datas, cb) {
-                return self.sendMessage(message.chat.id, text, datas, cb);
-            };
-            message.replyMsg = function(text, datas, cb) {
-                datas = datas || {};
-                datas.reply_to_message_id = message.message_id;
-                return self.sendMessage(message.chat.id, text, datas, cb);
-            };
-            message.sendToUser = function(text, datas, cb) {
-                return self.sendMessage(message.from.id, text, datas, cb);
-            };
             this.cmdList[cmd].script(message, args);
             console.log("[COMMAND]", cmd, args);
         }

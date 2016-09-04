@@ -100,19 +100,43 @@ TGBOT.prototype.getUpdates = function(timeout, offset) {
 
 };
 
-TGBOT.prototype.addMethodToMessage = function(message) {
+TGBOT.prototype.addMethodToMessage = function(message,oldDatas) {
     var self = this;
     message.sendToChat = function(text, datas, cb) {
         return self.sendMessage(message.chat.id, text, datas, cb);
     };
     message.replyMsg = function(text, datas, cb) {
-        datas = datas || {};
+        datas = typeof datas === "object" ? datas : {};
         datas.reply_to_message_id = message.message_id;
         return self.sendMessage(message.chat.id, text, datas, cb);
     };
-    message.sendToUser = function(text, datas, cb) {
-        return self.sendMessage(message.from.id, text, datas, cb);
-    };
+
+    if(message.from.username==self.username){
+        message.editText = function(text,datas,cb){
+            datas = typeof datas === "object" ? datas : {};
+            datas.chat_id = message.chat.id;
+            datas.message_id = message.message_id;
+            if(oldDatas&& !datas.reply_markup) datas.reply_markup = oldDatas.reply_markup;
+            return self.editMessageText(text,datas,cb);
+        };
+        message.editCaption = function(caption,datas,cb){
+            datas = typeof datas === "object" ? datas : {};
+            datas.chat_id = message.chat.id;
+            datas.message_id = message.message_id;
+            if(oldDatas && !datas.reply_markup) datas.reply_markup = oldDatas.reply_markup;
+            return self.editMessageCaption(caption,datas,cb);
+        };
+        message.editReplyMarkup= function(replyMarkup,datas,cb){
+            datas = typeof datas === "object" ? datas : {};
+            datas.chat_id = message.chat.id;
+            datas.message_id = message.message_id;
+            return self.editMessageReplyMarkup(replyMarkup,datas,cb);
+        };
+    }else{
+        message.sendToUser = function(text, datas, cb) {
+            return self.sendMessage(message.from.id, text, datas, cb);
+        };
+    }
     return message;
 };
 
@@ -174,19 +198,23 @@ TGBOT.prototype.sendMessage = function sendMessage(chat_id, text, datas, cb) {
     datas = typeof datas === "object" ? datas : {};
     datas.chat_id = chat_id;
     datas.text = text;
-    var onCBQ;
+    var onCBQ,message;
     this._invoke('sendMessage', datas, function(err, result) {
+        message = self.addMethodToMessage(result,datas);
         if (onCBQ) {
             self.onCBQList.push({
-                id: result.message_id,
+                id: message.message_id,
                 fn: onCBQ
             });
         }
-        if (cb) cb(err, result);
+        if (cb) cb(err, message);
     });
     return {
         onCallbackQuery: function(fn) {
-            onCBQ = fn;
+            onCBQ = function(cbq){
+                if(message) cbq.message = message;
+                fn(cbq);
+            };
         }
     };
 };
@@ -254,8 +282,31 @@ TGBOT.prototype.execCmd = function(message) {
     }
 };
 
-TGBOT.prototype.editMessageText = function(chat_id, message_id, text, datas, cb) {
+TGBOT.prototype.editMessageText = function(text,datas,cb) {
+    datas = typeof datas === "object" ? datas : {};
+    if(!(datas.inline_message_id || (datas.chat_id && datas.message_id))){
+        return false;
+    }
+    datas.text = text;
+    return this._invoke('editMessageText', datas, cb);
+};
 
+TGBOT.prototype.editMessageCaption = function(caption,datas,cb) {
+    datas = typeof datas === "object" ? datas : {};
+    if(!(datas.inline_message_id || (datas.chat_id && datas.message_id))){
+        return false;
+    }
+    datas.caption = caption;
+    return this._invoke('editMessageCaption', datas, cb);
+};
+
+TGBOT.prototype.editMessageReplyMarkup = function(replyMarkup,datas,cb) {
+    datas = typeof datas === "object" ? datas : {};
+    if(!(datas.inline_message_id || (datas.chat_id && datas.message_id))){
+        return false;
+    }
+    datas.reply_markup = replyMarkup;
+    return this._invoke('editMessageReplyMarkup', datas, cb);
 };
 /**
  * 產生Help

@@ -200,6 +200,7 @@ TGBOT.prototype.sendMessage = function sendMessage(chat_id, text, datas, cb) {
     datas.text = text;
     var onCBQ,message;
     this._invoke('sendMessage', datas, function(err, result) {
+        if(err) console.log(err);
         message = self.addMethodToMessage(result,datas);
         if (onCBQ) {
             self.onCBQList.push({
@@ -228,6 +229,7 @@ TGBOT.prototype.sendMessage = function sendMessage(chat_id, text, datas, cb) {
  * @cb {Function} [cb] callback
  */
 TGBOT.prototype.replyMessage = function replyMessage(chat_id, reply_to_message_id, text, datas, cb) {
+    datas = typeof datas === "object" ? datas : {};
     datas.reply_to_message_id = reply_to_message_id;
     this.sendMessage(chat_id, text, datas, cb)
 };

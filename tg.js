@@ -149,6 +149,14 @@ TGBOT.prototype.addMethodToMessage = function(message, oldDatas) {
     return message;
 };
 
+TGBOT.prototype.answerCallbackQuery = function(callback_query_id, text, show_alert, cb) {
+    var datas = {};
+    datas.callback_query_id = callback_query_id;
+    datas.text = text || "";
+    datas.show_alert = show_alert || false;
+    return this._invoke('answerCallbackQuery', datas, cb);
+};
+
 TGBOT.prototype._invoke = function(apiName, params, cb, timeout, multiPart) {
     cb = cb || function() {};
     timeout = timeout || 15000;
@@ -232,6 +240,11 @@ TGBOT.prototype.sendMessage = function sendMessage(chat_id, text, datas, cb) {
         onCallbackQuery: function(fn) {
             onCBQ = function(cbq) {
                 if (message) cbq.message = message;
+                if (cbq) {
+                    cbq.answer = function(text, show_alert, cb) {
+                        self.answerCallbackQuery(cbq.id, text, show_alert, cb);
+                    };
+                }
                 fn(cbq);
             };
             return returnValue;

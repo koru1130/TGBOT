@@ -39,7 +39,7 @@ TGBOT.prototype.start = function() {
     });
     if (self.help) {
         self.addCmd('help', function(message, args) {
-            if (args[0]) {
+            if (args[1]&&self.cmdList[args[1]]) {
                 message.replyMsg(self.cmdList[args[1]].helpMsg || (self.cmdList[args[1]].desc || "Command " + args[1] + " not found or nothing to display :("));
             }
             else {

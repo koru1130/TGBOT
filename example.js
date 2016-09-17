@@ -20,6 +20,8 @@ bot.addCmd('test', function(message, args) {
         })
     }).onCallbackQuery(function(cbq){
         cbq.message.editText(cbq.from.username + " " + cbq.data);
+    }).onReply(function(newMsg,myMsg){
+        myMsg.editText(newMsg.from.username + " " + newMsg.text);
     });
 },'owo');
 

@@ -18,6 +18,7 @@ function TGBOT(options) {
 
     this.cmdList = {};
     this.onCBQList = [];
+    this.onReplyList = [];
 
     this.lastOffset = null;
     this.username = null;
@@ -72,6 +73,12 @@ TGBOT.prototype.getUpdates = function(timeout, offset) {
                     var message = self.addMethodToMessage(update.message);
                     self.emit('message', message);
                     if (message.text) self.execCmd(message);
+                    if (message.reply_to_message) {
+                        var onReply = self.onReplyList.find(function(element) {
+                            return element.id == message.reply_to_message.message_id;
+                        });
+                        if (onReply) onReply.fn(message);
+                    }
                     //console.log(update.message);
                 }
                 else if (update.inline_query) {
@@ -100,8 +107,8 @@ TGBOT.prototype.getUpdates = function(timeout, offset) {
 
 };
 
-TGBOT.prototype.addMethodToMessage = function(message,oldDatas) {
-    if(!message) return;
+TGBOT.prototype.addMethodToMessage = function(message, oldDatas) {
+    if (!message) return;
     var self = this;
     message.sendToChat = function(text, datas, cb) {
         return self.sendMessage(message.chat.id, text, datas, cb);
@@ -112,28 +119,29 @@ TGBOT.prototype.addMethodToMessage = function(message,oldDatas) {
         return self.sendMessage(message.chat.id, text, datas, cb);
     };
 
-    if(message.from.username==self.username){
-        message.editText = function(text,datas,cb){
+    if (message.from.username == self.username) {
+        message.editText = function(text, datas, cb) {
             datas = typeof datas === "object" ? datas : {};
             datas.chat_id = message.chat.id;
             datas.message_id = message.message_id;
-            if(oldDatas&& !datas.reply_markup) datas.reply_markup = oldDatas.reply_markup;
-            return self.editMessageText(text,datas,cb);
+            if (oldDatas && !datas.reply_markup) datas.reply_markup = oldDatas.reply_markup;
+            return self.editMessageText(text, datas, cb);
         };
-        message.editCaption = function(caption,datas,cb){
+        message.editCaption = function(caption, datas, cb) {
             datas = typeof datas === "object" ? datas : {};
             datas.chat_id = message.chat.id;
             datas.message_id = message.message_id;
-            if(oldDatas && !datas.reply_markup) datas.reply_markup = oldDatas.reply_markup;
-            return self.editMessageCaption(caption,datas,cb);
+            if (oldDatas && !datas.reply_markup) datas.reply_markup = oldDatas.reply_markup;
+            return self.editMessageCaption(caption, datas, cb);
         };
-        message.editReplyMarkup= function(replyMarkup,datas,cb){
+        message.editReplyMarkup = function(replyMarkup, datas, cb) {
             datas = typeof datas === "object" ? datas : {};
             datas.chat_id = message.chat.id;
             datas.message_id = message.message_id;
-            return self.editMessageReplyMarkup(replyMarkup,datas,cb);
+            return self.editMessageReplyMarkup(replyMarkup, datas, cb);
         };
-    }else{
+    }
+    else {
         message.sendToUser = function(text, datas, cb) {
             return self.sendMessage(message.from.id, text, datas, cb);
         };
@@ -199,26 +207,43 @@ TGBOT.prototype.sendMessage = function sendMessage(chat_id, text, datas, cb) {
     datas = typeof datas === "object" ? datas : {};
     datas.chat_id = chat_id;
     datas.text = text;
-    var onCBQ,message;
+    var onCBQ, message, onReply;
     this._invoke('sendMessage', datas, function(err, result) {
-        if(err) console.log(err);
-        message = self.addMethodToMessage(result,datas);
-        if (onCBQ&&message) {
-            self.onCBQList.push({
-                id: message.message_id,
-                fn: onCBQ
-            });
+        if (err) console.log(err);
+        message = self.addMethodToMessage(result, datas);
+        if (message) {
+            if (onCBQ) {
+                self.onCBQList.push({
+                    id: message.message_id,
+                    fn: onCBQ
+                });
+            }
+            if (onReply) {
+                self.onReplyList.push({
+                    id: message.message_id,
+                    fn: onReply
+                });
+            }
         }
         if (cb) cb(err, message);
     });
-    return {
+
+    var returnValue = {
         onCallbackQuery: function(fn) {
-            onCBQ = function(cbq){
-                if(message) cbq.message = message;
+            onCBQ = function(cbq) {
+                if (message) cbq.message = message;
                 fn(cbq);
             };
+            return returnValue;
+        },
+        onReply: function(fn) {
+            onReply = function(newMsg) {
+                fn(newMsg, message);
+            };
+            return returnValue;
         }
     };
+    return returnValue;
 };
 /**
  * 回復訊息
@@ -285,27 +310,27 @@ TGBOT.prototype.execCmd = function(message) {
     }
 };
 
-TGBOT.prototype.editMessageText = function(text,datas,cb) {
+TGBOT.prototype.editMessageText = function(text, datas, cb) {
     datas = typeof datas === "object" ? datas : {};
-    if(!(datas.inline_message_id || (datas.chat_id && datas.message_id))){
+    if (!(datas.inline_message_id || (datas.chat_id && datas.message_id))) {
         return false;
     }
     datas.text = text;
     return this._invoke('editMessageText', datas, cb);
 };
 
-TGBOT.prototype.editMessageCaption = function(caption,datas,cb) {
+TGBOT.prototype.editMessageCaption = function(caption, datas, cb) {
     datas = typeof datas === "object" ? datas : {};
-    if(!(datas.inline_message_id || (datas.chat_id && datas.message_id))){
+    if (!(datas.inline_message_id || (datas.chat_id && datas.message_id))) {
         return false;
     }
     datas.caption = caption;
     return this._invoke('editMessageCaption', datas, cb);
 };
 
-TGBOT.prototype.editMessageReplyMarkup = function(replyMarkup,datas,cb) {
+TGBOT.prototype.editMessageReplyMarkup = function(replyMarkup, datas, cb) {
     datas = typeof datas === "object" ? datas : {};
-    if(!(datas.inline_message_id || (datas.chat_id && datas.message_id))){
+    if (!(datas.inline_message_id || (datas.chat_id && datas.message_id))) {
         return false;
     }
     datas.reply_markup = replyMarkup;

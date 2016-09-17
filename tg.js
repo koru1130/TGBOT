@@ -101,6 +101,7 @@ TGBOT.prototype.getUpdates = function(timeout, offset) {
 };
 
 TGBOT.prototype.addMethodToMessage = function(message,oldDatas) {
+    if(!message) return;
     var self = this;
     message.sendToChat = function(text, datas, cb) {
         return self.sendMessage(message.chat.id, text, datas, cb);
@@ -163,7 +164,7 @@ TGBOT.prototype._invoke = function(apiName, params, cb, timeout, multiPart) {
     request.post(requestData, function(err, response, body) {
         // console.log(response);
         if (err || response.statusCode !== 200) {
-            return cb(err || new Error('unexpect response code: ' + response.statusCode + ' ' + body));
+            return cb(err || new Error(body));
         }
         try {
             body = JSON.parse(body);
@@ -202,7 +203,7 @@ TGBOT.prototype.sendMessage = function sendMessage(chat_id, text, datas, cb) {
     this._invoke('sendMessage', datas, function(err, result) {
         if(err) console.log(err);
         message = self.addMethodToMessage(result,datas);
-        if (onCBQ) {
+        if (onCBQ&&message) {
             self.onCBQList.push({
                 id: message.message_id,
                 fn: onCBQ

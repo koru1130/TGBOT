@@ -1,6 +1,6 @@
 var TGBOT = require("./TGBOT/tg");
 var bot = new TGBOT({
-    token: '',
+    token: 'C8763',
     help: true
 });
 

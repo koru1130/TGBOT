@@ -35,7 +35,7 @@ TGBOT.prototype.start = function() {
     this.getMe(function(error, result) {
         if (error) console.log(error);
         self.username = result.username;
-        self.cmdRegex = new RegExp("^\/(\\w+)(?:@" + self.username + ")?(?: (.*))?$", "i");
+        self.cmdRegex = new RegExp("^\/(\\w+)(?:@" + self.username + ")?(?: ((.|\\n)*))?$", "i");
     });
     if (self.help) {
         self.addCmd('help', function(message, args) {

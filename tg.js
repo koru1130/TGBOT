@@ -15,6 +15,7 @@ function TGBOT(options) {
     this.token = options.token;
     this.pollingTimeout = options.pollingTimeout || 40;
     this.help = options.help;
+    this.fullRegex = options.fullRegex;
 
     this.cmdList = {};
     this.onCBQList = [];
@@ -35,7 +36,11 @@ TGBOT.prototype.start = function() {
     this.getMe(function(error, result) {
         if (error) console.log(error);
         self.username = result.username;
-        self.cmdRegex = new RegExp("^\/(\\w+)(?:@" + self.username + ")?(?: ((.|\\n)*))?$", "i");
+        if (this.fullRegex) {
+            self.cmdRegex = new RegExp("^\/(\\w+)(?:@" + self.username + ")(?: ((.|\\n)*))?$", "i");
+        } else {
+            self.cmdRegex = new RegExp("^\/(\\w+)(?:@" + self.username + ")?(?: ((.|\\n)*))?$", "i");
+        }
     });
     if (self.help) {
         self.addCmd('help', function(message, args) {

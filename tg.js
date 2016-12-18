@@ -162,6 +162,14 @@ TGBOT.prototype.answerCallbackQuery = function(callback_query_id, text, show_ale
     return this._invoke('answerCallbackQuery', datas, cb);
 };
 
+TGBOT.prototype.answerInlineQuery = function(inline_query_id, results, datas, cb) {
+    datas = datas || {};
+    results = results || [];
+    datas.inline_query_id = inline_query_id;
+    datas.results = JSON.stringify(results);
+    return this._invoke('answerInlineQuery', datas, cb);
+};
+
 TGBOT.prototype._invoke = function(apiName, params, cb, timeout, multiPart) {
     cb = cb || function() {};
     timeout = timeout || 15000;

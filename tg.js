@@ -124,7 +124,7 @@ TGBOT.prototype.addMethodToMessage = function(message, oldDatas) {
         return self.sendMessage(message.chat.id, text, datas, cb);
     };
 
-    if (message.from.username == self.username) {
+    if (!message.from || message.from.username == self.username) {
         message.editText = function(text, datas, cb) {
             datas = typeof datas === "object" ? datas : {};
             datas.chat_id = message.chat.id;

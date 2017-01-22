@@ -378,4 +378,8 @@ TGBOT.prototype.genHelp = function(format) {
     return help;
 };
 
+TGBOT.prototype.getChatAdministrators = function(chat_id, cb){
+    return this._invoke('getChatAdministrators', {chat_id:chat_id}, cb);
+};
+
 module.exports = TGBOT;

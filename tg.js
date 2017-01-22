@@ -378,4 +378,34 @@ TGBOT.prototype.genHelp = function(format) {
     return help;
 };
 
+TGBOT.prototype.getChatAdministrators = function(chat_id, cb){
+    return this._invoke('getChatAdministrators', {chat_id:chat_id}, cb);
+};
+
+TGBOT.prototype.leaveChat = function(chat_id, datas, cb){
+    datas = typeof datas == "object" ? datas : {};
+    datas.chat_id = chat_id;
+    return this._invoke('leaveChat', datas, cb);
+};
+
+TGBOT.prototype.sendDocument = function(chat_id, document, datas, cb){
+    datas = typeof datas == "object" ? datas : {};
+    datas.chat_id = chat_id;
+    datas.document = document;
+    return this._invoke('sendDocument', datas, cb);
+};
+
+TGBOT.prototype.sendPhoto = function(chat_id, photo, datas, cb){
+    datas = typeof datas === "object" ? datas : {};
+    datas.chat_id = chat_id;
+    datas.photo = photo;
+    return this._invoke('sendPhoto', datas, cb);
+};
+
+TGBOT.prototype.sendSticker = function(chat_id,sticker,datas,cb){
+    datas = typeof datas === "object" ? datas : {};
+    datas.chat_id = chat_id;
+    datas.sticker = sticker;
+    return this._invoke('sendSticker',datas,cb);
+};
 module.exports = TGBOT;

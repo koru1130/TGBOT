@@ -192,6 +192,10 @@ TGBOT.prototype._invoke = function(apiName, params, cb, timeout, multiPart) {
     //console.log(requestData);
     request.post(requestData, function(err, response, body) {
         // console.log(response);
+        if (response.statusCode === 401) {
+            console.log('[ERROR] Wrong token');
+            process.exit(1);
+        }
         if (err || response.statusCode !== 200) {
             return cb(err || new Error(body));
         }

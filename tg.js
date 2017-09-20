@@ -145,6 +145,12 @@ TGBOT.prototype.addMethodToMessage = function(message, oldDatas) {
             datas.message_id = message.message_id;
             return self.editMessageReplyMarkup(replyMarkup, datas, cb);
         };
+        message.delete = function(datas, cb) {
+            datas = typeof datas === "object" ? datas : {};
+            datas.chat_id = message.chat.id;
+            datas.message_id = message.message_id;
+            return self.deleteMessage(datas, cb);
+        };
     }
     else {
         message.sendToUser = function(text, datas, cb) {
@@ -365,6 +371,14 @@ TGBOT.prototype.editMessageReplyMarkup = function(replyMarkup, datas, cb) {
     }
     datas.reply_markup = replyMarkup;
     return this._invoke('editMessageReplyMarkup', datas, cb);
+};
+
+TGBOT.prototype.deleteMessage = function(datas, cb) {
+    datas = typeof datas === "object" ? datas : {};
+    if (!(datas.chat_id && datas.message_id)) {
+        return false;
+    }
+    return this._invoke('deleteMessage', datas, cb);
 };
 /**
  * 產生Help

@@ -2,6 +2,9 @@ var request = require('request');
 var EventEmitter = require("events").EventEmitter;
 var util = require("util");
 
+const regexUsernameRequired = new RegExp("^\/(\\w+)(?:@" + self.username + ")(?: ((.|\\n)*))?$", "i");
+const regexUsernameOptional = new RegExp("^\/(\\w+)(?:@" + self.username + ")?(?: ((.|\\n)*))?$", "i");
+
 /**
  * 物件TGBOT
  * 
@@ -15,7 +18,7 @@ function TGBOT(options) {
     this.token = options.token;
     this.pollingTimeout = options.pollingTimeout || 40;
     this.help = options.help;
-    this.fullRegex = options.fullRegex;
+    this.cmdRequireUsernameInGroup = options.cmdRequireUsernameInGroup;
 
     this.cmdList = {};
     this.onCBQList = [];
@@ -36,15 +39,15 @@ TGBOT.prototype.start = function() {
     this.getMe(function(error, result) {
         if (error) console.log(error);
         self.username = result.username;
-        if (this.fullRegex) {
-            self.cmdRegex = new RegExp("^\/(\\w+)(?:@" + self.username + ")(?: ((.|\\n)*))?$", "i");
+        if (this.cmdRequireUsernameInGroup) {
+            self.cmdRegex = regexUsernameRequired;
         } else {
-            self.cmdRegex = new RegExp("^\/(\\w+)(?:@" + self.username + ")?(?: ((.|\\n)*))?$", "i");
+            self.cmdRegex = regexUsernameOptional;
         }
     });
     if (self.help) {
         self.addCmd('help', function(message, args) {
-            if (args[1]&&self.cmdList[args[1]]) {
+            if (args[1] && self.cmdList[args[1]]) {
                 message.replyMsg(self.cmdList[args[1]].helpMsg || (self.cmdList[args[1]].desc || "Command " + args[1] + " not found or nothing to display :("));
             }
             else {
@@ -332,9 +335,13 @@ TGBOT.prototype.addCmd = function(cmd, script, desc, helpMsg) {
 
 TGBOT.prototype.execCmd = function(message) {
     var self = this;
-    var result = message.text.match(this.cmdRegex);
-    var cmd;
+    var result, cmd;
     var args = [];
+    if (message.chat.type == "private") {
+        result = message.text.match(regexUsernameOptional);
+    } else {
+        result = message.text.match(this.cmdRegex);
+    }
     if (result) {
         cmd = result[1];
         args[0] = result[2];

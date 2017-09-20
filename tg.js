@@ -287,7 +287,7 @@ TGBOT.prototype.sendMessage = function sendMessage(chat_id, text, datas, cb) {
 TGBOT.prototype.replyMessage = function replyMessage(chat_id, reply_to_message_id, text, datas, cb) {
     datas = typeof datas === "object" ? datas : {};
     datas.reply_to_message_id = reply_to_message_id;
-    this.sendMessage(chat_id, text, datas, cb)
+    return this.sendMessage(chat_id, text, datas, cb);
 };
 /**
  * 轉傳訊息

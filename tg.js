@@ -2,9 +2,6 @@ var request = require('request');
 var EventEmitter = require("events").EventEmitter;
 var util = require("util");
 
-const regexUsernameRequired = new RegExp("^\/(\\w+)(?:@" + self.username + ")(?: ((.|\\n)*))?$", "i");
-const regexUsernameOptional = new RegExp("^\/(\\w+)(?:@" + self.username + ")?(?: ((.|\\n)*))?$", "i");
-
 /**
  * 物件TGBOT
  * 
@@ -27,6 +24,8 @@ function TGBOT(options) {
     this.lastOffset = null;
     this.username = null;
     this.cmdRegex = null;
+    this.regexUsernameRequired = null;
+    this.regexUsernameOptional = null;
 }
 util.inherits(TGBOT, EventEmitter);
 /**
@@ -39,10 +38,12 @@ TGBOT.prototype.start = function() {
     this.getMe(function(error, result) {
         if (error) console.log(error);
         self.username = result.username;
-        if (this.cmdRequireUsernameInGroup) {
-            self.cmdRegex = regexUsernameRequired;
+        self.regexUsernameRequired = new RegExp("^\/(\\w+)(?:@" + self.username + ")(?: ((.|\\n)*))?$", "i");
+        self.regexUsernameOptional = new RegExp("^\/(\\w+)(?:@" + self.username + ")?(?: ((.|\\n)*))?$", "i");
+        if (self.cmdRequireUsernameInGroup) {
+            self.cmdRegex = self.regexUsernameRequired;
         } else {
-            self.cmdRegex = regexUsernameOptional;
+            self.cmdRegex = self.regexUsernameOptional;
         }
     });
     if (self.help) {

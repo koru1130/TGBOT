@@ -339,7 +339,7 @@ TGBOT.prototype.execCmd = function(message) {
     var result, cmd;
     var args = [];
     if (message.chat.type == "private") {
-        result = message.text.match(regexUsernameOptional);
+        result = message.text.match(this.regexUsernameOptional);
     } else {
         result = message.text.match(this.cmdRegex);
     }
